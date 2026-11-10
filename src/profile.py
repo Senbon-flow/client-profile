@@ -1,9 +1,11 @@
 """Профиль клиента: доходы и расходы по месяцам, топ категорий, контрагенты."""
 import json
+import re
 from functools import lru_cache
 
 from src.loader import load_transactions
 
+CLIENT_ID_RE = re.compile(r"10\d\d")  # клиенты -- id вида 10xx
 
 class UnknownClient(Exception):
     """Такого клиента нет в данных."""
@@ -25,6 +27,10 @@ def build_profile(client_id, date_from, date_to, transactions=None, mcc_categori
     """date_from и date_to -- объекты datetime.date, обе границы включительно."""
     df = get_transactions() if transactions is None else transactions
     mcc_categories = get_mcc_categories() if mcc_categories is None else mcc_categories
+    
+    # Клиенты -- только id вида 10xx (остальные id: торговцы и работодатели).
+    if not CLIENT_ID_RE.fullmatch(client_id):
+        raise UnknownClient(client_id)
 
     # Все операции клиента (в любую сторону).
     mine = df[(df.payer_id == client_id) | (df.payee_id == client_id)]
