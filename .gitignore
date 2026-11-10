@@ -1,0 +1,6 @@
+.venv/
+__pycache__/
+rejected.csv
+*.db
+.pytest_cache/
+data/
